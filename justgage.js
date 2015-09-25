@@ -601,7 +601,7 @@ define(['eve'], function(eve){
   obj.txtTitle.attr({
     "font-size":obj.params.titleFontSize,
     "font-weight":"bold",
-    "font-family":"Arial",
+    "font-family":["Open Sans","Helvetica Neue","Helvetica","Arial","sans-serif"],
     "fill":obj.config.titleFontColor,
     "fill-opacity":"1"
   });
@@ -612,7 +612,7 @@ define(['eve'], function(eve){
   obj.txtValue.attr({
     "font-size":obj.params.valueFontSize,
     "font-weight":"bold",
-    "font-family":"Arial",
+    "font-family":["Open Sans","Helvetica Neue","Helvetica","Arial","sans-serif"],
     "fill":obj.config.valueFontColor,
     "fill-opacity":"0"
   });
@@ -623,7 +623,7 @@ define(['eve'], function(eve){
   obj.txtLabel.attr({
     "font-size":obj.params.labelFontSize,
     "font-weight":"normal",
-    "font-family":"Arial",
+    "font-family":["Open Sans","Helvetica Neue","Helvetica","Arial","sans-serif"],
     "fill":obj.config.labelFontColor,
     "fill-opacity":"0"
   });
