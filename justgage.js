@@ -600,7 +600,7 @@ define(['eve'], function(eve){
   obj.txtTitle = obj.canvas.text(obj.params.titleX, obj.params.titleY, obj.config.title);
   obj.txtTitle.attr({
     "font-size":obj.params.titleFontSize,
-    "font-weight":"bold",
+    "font-weight":"normal",
     "font-family":["Open Sans","Helvetica Neue","Helvetica","Arial","sans-serif"],
     "fill":obj.config.titleFontColor,
     "fill-opacity":"1"
