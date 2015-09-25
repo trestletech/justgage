@@ -97,7 +97,7 @@
      * Option to configure minimum font size for all texts
      * Option to show shorthand big numbers (human friendly)
      */
-
+define(['eve'], function(eve){
  JustGage = function(config) {
 
   var obj = this;
@@ -1054,3 +1054,6 @@ var ie = (function(){
     );
     return v > 4 ? v : undef;
 }());
+
+return JustGage;
+});
