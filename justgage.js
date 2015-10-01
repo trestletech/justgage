@@ -294,7 +294,11 @@ define(['eve'], function(eve){
 
     // formatNumber: boolean
     // formats numbers with commas where appropriate
-    formatNumber : kvLookup('formatNumber', config, dataset, false)
+    formatNumber : kvLookup('formatNumber', config, dataset, false),
+
+    // showGauge: boolean
+    // whether or not to show the gauge
+    showGauge : kvLookup('showGauge', config, dataset, true)
   };
 
   // variables
@@ -391,6 +395,7 @@ define(['eve'], function(eve){
     // value
     valueFontSize = ((widgetH / 6.4) > 16) ? (widgetH / 5.4) : 18;
     valueX = dx + widgetW / 2;
+
     if(obj.config.label !== '') {
       valueY = dy + widgetH / 1.85;
     } else {
@@ -453,23 +458,27 @@ define(['eve'], function(eve){
     // value
     valueFontSize = ((widgetH / 6.5) > obj.config.valueMinFontSize) ? (widgetH / 6.5) : obj.config.valueMinFontSize;
     valueX = dx + widgetW / 2;
-    valueY = dy + widgetH / 1.275;
+    if (obj.config.showGauge === false){
+      valueY = dy + widgetH / 1.8;
+    } else {
+      valueY = dy + widgetH / 1.275;
+    }
 
     // label
     labelFontSize = ((widgetH / 16) > obj.config.labelMinFontSize) ? (widgetH / 16) : obj.config.labelMinFontSize;
     labelX = dx + widgetW / 2;
     labelY = valueY + valueFontSize / 2 + 5;
 
-    // min
-    minFontSize = ((widgetH / 16) > obj.config.minLabelMinFontSize) ? (widgetH / 16) : obj.config.minLabelMinFontSize;
-    minX = dx + (widgetW / 10) + (widgetW / 6.666666666666667 * obj.config.gaugeWidthScale) / 2 ;
-    minY = labelY;
+      // min
+      minFontSize = ((widgetH / 16) > obj.config.minLabelMinFontSize) ? (widgetH / 16) : obj.config.minLabelMinFontSize;
+      minX = dx + (widgetW / 10) + (widgetW / 6.666666666666667 * obj.config.gaugeWidthScale) / 2 ;
+      minY = labelY;
 
-    // max
-    maxFontSize = ((widgetH / 16) > obj.config.maxLabelMinFontSize) ? (widgetH / 16) : obj.config.maxLabelMinFontSize;
-    maxX = dx + widgetW - (widgetW / 10) - (widgetW / 6.666666666666667 * obj.config.gaugeWidthScale) / 2 ;
-    maxY = labelY;
-  }
+      // max
+      maxFontSize = ((widgetH / 16) > obj.config.maxLabelMinFontSize) ? (widgetH / 16) : obj.config.maxLabelMinFontSize;
+      maxX = dx + widgetW - (widgetW / 10) - (widgetW / 6.666666666666667 * obj.config.gaugeWidthScale) / 2 ;
+      maxY = labelY;
+    }
 
   // parameters
   obj.params  = {
@@ -559,10 +568,14 @@ define(['eve'], function(eve){
     alpha, Ro, Ri, Cx, Cy, Xo, Yo, Xi, Yi, path = null;
   };
 
-  // gauge
-  obj.gauge = obj.canvas.path().attr({
+    var gaugeFillCol = obj.config.gaugeColor;
+    if (!obj.config.showGauge){
+      gaugeFillCol = 'none';
+    }
+    // gauge
+    obj.gauge = obj.canvas.path().attr({
       "stroke": "none",
-      "fill": obj.config.gaugeColor,
+      "fill": gaugeFillCol,
       pki: [
         obj.config.max,
         obj.config.min,
@@ -574,12 +587,16 @@ define(['eve'], function(eve){
         obj.config.gaugeWidthScale,
         obj.config.donut
       ]
-  });
+    });
 
   // level
+  var fillCol = getColor(obj.config.value, (obj.config.value - obj.config.min) / (obj.config.max - obj.config.min), obj.config.levelColors, obj.config.noGradient, obj.config.customSectors);
+  if (!obj.config.showGauge) {
+    fillCol = 'none';
+  }
   obj.level = obj.canvas.path().attr({
     "stroke": "none",
-    "fill": getColor(obj.config.value, (obj.config.value - obj.config.min) / (obj.config.max - obj.config.min), obj.config.levelColors, obj.config.noGradient, obj.config.customSectors),
+    "fill": fillCol,
     pki: [
       obj.config.min,
       obj.config.min,
@@ -629,52 +646,56 @@ define(['eve'], function(eve){
   });
   setDy(obj.txtLabel, obj.params.labelFontSize, obj.params.labelY);
 
-  // min
-  obj.txtMinimum = obj.config.min;
-  if( obj.config.humanFriendly ) {
-    obj.txtMinimum = humanFriendlyNumber( obj.config.min, obj.config.humanFriendlyDecimal );
-  } else if ( obj.config.formatNumber ) {
-    obj.txtMinimum = formatNumber( obj.config.min );
-  }
-  obj.txtMin = obj.canvas.text(obj.params.minX, obj.params.minY, obj.txtMinimum);
-  obj.txtMin.attr({
-    "font-size":obj.params.minFontSize,
-    "font-weight":"normal",
-    "font-family":"Arial",
-    "fill":obj.config.labelFontColor,
-    "fill-opacity": (obj.config.hideMinMax || obj.config.donut)? "0" : "1"
-  });
-  setDy(obj.txtMin, obj.params.minFontSize, obj.params.minY);
+  if (obj.config.showGauge){
+    // min
+    obj.txtMinimum = obj.config.min;
+    if( obj.config.humanFriendly ) {
+      obj.txtMinimum = humanFriendlyNumber( obj.config.min, obj.config.humanFriendlyDecimal );
+    } else if ( obj.config.formatNumber ) {
+      obj.txtMinimum = formatNumber( obj.config.min );
+    }
+    obj.txtMin = obj.canvas.text(obj.params.minX, obj.params.minY, obj.txtMinimum);
+    obj.txtMin.attr({
+      "font-size":obj.params.minFontSize,
+      "font-weight":"normal",
+      "font-family":"Arial",
+      "fill":obj.config.labelFontColor,
+      "fill-opacity": (obj.config.hideMinMax || obj.config.donut)? "0" : "1"
+    });
+    setDy(obj.txtMin, obj.params.minFontSize, obj.params.minY);
 
-  // max
-  obj.txtMaximum = obj.config.max;
-  if( obj.config.formatNumber ) {
-    obj.txtMaximum = formatNumber( obj.txtMaximum );
-  } else if( obj.config.humanFriendly ) {
-    obj.txtMaximum = humanFriendlyNumber( obj.config.max, obj.config.humanFriendlyDecimal );
+    // max
+    obj.txtMaximum = obj.config.max;
+    if( obj.config.formatNumber ) {
+      obj.txtMaximum = formatNumber( obj.txtMaximum );
+    } else if( obj.config.humanFriendly ) {
+      obj.txtMaximum = humanFriendlyNumber( obj.config.max, obj.config.humanFriendlyDecimal );
+    }
+    obj.txtMax = obj.canvas.text(obj.params.maxX, obj.params.maxY, obj.txtMaximum);
+    obj.txtMax.attr({
+      "font-size":obj.params.maxFontSize,
+      "font-weight":"normal",
+      "font-family":"Arial",
+      "fill":obj.config.labelFontColor,
+      "fill-opacity": (obj.config.hideMinMax || obj.config.donut)? "0" : "1"
+    });
+    setDy(obj.txtMax, obj.params.maxFontSize, obj.params.maxY);
   }
-  obj.txtMax = obj.canvas.text(obj.params.maxX, obj.params.maxY, obj.txtMaximum);
-  obj.txtMax.attr({
-    "font-size":obj.params.maxFontSize,
-    "font-weight":"normal",
-    "font-family":"Arial",
-    "fill":obj.config.labelFontColor,
-    "fill-opacity": (obj.config.hideMinMax || obj.config.donut)? "0" : "1"
-  });
-  setDy(obj.txtMax, obj.params.maxFontSize, obj.params.maxY);
 
   var defs = obj.canvas.canvas.childNodes[1];
   var svg = "http://www.w3.org/2000/svg";
 
-  if (ie !== 'undefined' && ie < 9 ) {
-    // VML mode - no SVG & SVG filter support
-  }
-  else if (ie !== 'undefined') {
-    onCreateElementNsReady(function() {
+  if (obj.config.showGauge) {
+    if (ie !== 'undefined' && ie < 9 ) {
+      // VML mode - no SVG & SVG filter support
+    }
+    else if (ie !== 'undefined') {
+      onCreateElementNsReady(function() {
+        obj.generateShadow(svg, defs);
+      });
+    } else {
       obj.generateShadow(svg, defs);
-    });
-  } else {
-    obj.generateShadow(svg, defs);
+    }
   }
 
   // var clear
@@ -721,19 +742,20 @@ define(['eve'], function(eve){
   }
 
   // animate gauge level, value & label
-  obj.level.animate({
-    pki: [
-      obj.config.value,
-      obj.config.min,
-      obj.config.max,
-      obj.params.widgetW,
-      obj.params.widgetH,
-      obj.params.dx,
-      obj.params.dy,
-      obj.config.gaugeWidthScale,
-      obj.config.donut
-    ]
-  }, obj.config.startAnimationTime, obj.config.startAnimationType);
+  //
+    obj.level.animate({
+      pki: [
+        obj.config.value,
+        obj.config.min,
+        obj.config.max,
+        obj.params.widgetW,
+        obj.params.widgetH,
+        obj.params.dx,
+        obj.params.dy,
+        obj.config.gaugeWidthScale,
+        obj.config.donut
+      ]
+    }, obj.config.startAnimationTime, obj.config.startAnimationType);
   obj.txtValue.animate({"fill-opacity":(obj.config.hideValue)?"0":"1"}, obj.config.startAnimationTime, obj.config.startAnimationType);
   obj.txtLabel.animate({"fill-opacity":"1"}, obj.config.startAnimationTime, obj.config.startAnimationType);
 };
@@ -745,7 +767,7 @@ JustGage.prototype.refresh = function(val, max) {
   var displayVal, color, max = max || null;
 
   // set new max
-  if(max !== null) {
+  if(max !== null && obj.config.showGauge) {
     obj.config.max = max;
 
     obj.txtMaximum = obj.config.max;
@@ -764,6 +786,9 @@ JustGage.prototype.refresh = function(val, max) {
   if ((val * 1) < (obj.config.min * 1)) {val = (obj.config.min * 1);}
 
   color = getColor(val, (val - obj.config.min) / (obj.config.max - obj.config.min), obj.config.levelColors, obj.config.noGradient, obj.config.customSectors);
+  if (!obj.config.showGauge) {
+    color = 'none';
+  }
 
   if(obj.config.textRenderer) {
     displayVal = obj.config.textRenderer(displayVal);
@@ -782,21 +807,20 @@ JustGage.prototype.refresh = function(val, max) {
     setDy(obj.txtValue, obj.params.valueFontSize, obj.params.valueY);
   }
 
-  obj.level.animate({
-    pki: [
-      obj.config.value,
-      obj.config.min,
-      obj.config.max,
-      obj.params.widgetW,
-      obj.params.widgetH,
-      obj.params.dx,
-      obj.params.dy,
-      obj.config.gaugeWidthScale,
-      obj.config.donut
-    ],
-    "fill":color
-  },  obj.config.refreshAnimationTime, obj.config.refreshAnimationType);
-
+    obj.level.animate({
+      pki: [
+        obj.config.value,
+        obj.config.min,
+        obj.config.max,
+        obj.params.widgetW,
+        obj.params.widgetH,
+        obj.params.dx,
+        obj.params.dy,
+        obj.config.gaugeWidthScale,
+        obj.config.donut
+      ],
+      "fill":color
+    },  obj.config.refreshAnimationTime, obj.config.refreshAnimationType);
   // var clear
   obj, displayVal, color, max = null;
 };
